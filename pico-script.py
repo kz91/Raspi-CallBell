@@ -49,17 +49,19 @@ class HTTPRequestWait:
 
 
 class RequestHandler:
-    def __init__(self, duration, bz_pin, led_pin, sw_pin):
+    def __init__(self, duration, bz_pin, led_pin, sw_pin, power_pin):
         print('!RequestHandler init')
         self.duration = duration
         self.bz_pin = machine.Pin(bz_pin, machine.Pin.OUT)
         self.led_pin = machine.Pin(led_pin, machine.Pin.OUT)
         self.sw_pin = machine.Pin(sw_pin, machine.Pin.IN, machine.Pin.PULL_UP)
+        self.power_pin = machine.Pin(power_pin, machine.Pin.OUT)
         self.interrupted = False
 
     # 呼び鈴処理
     def handle_request(self):
         print('!RequestHandler handle_request')
+        self.power_pin.on()
         for i in range(self.duration):
             if self.interrupted:
                 break
@@ -69,6 +71,7 @@ class RequestHandler:
             self.led_pin.off()
             self.bz_pin.off()
             time.sleep(0.5)
+        self.power_pin.off()
 
     def interrupt_handler(self, pin):
         print('!RequestHandler interrupt_handler')
@@ -80,14 +83,15 @@ def main():
     PW = 'Wifi Password'
     IP_ADDRESS = 'IP Address'
     PORT = 80
-    CALLBELL_DURATION = 30
-    BZ_PIN = 24
-    LED_PIN = 26
-    SW_PIN = 29
+    CALLBELL_DURATION = 10
+    BZ_PIN = 18
+    LED_PIN = 20
+    SW_PIN = 22
+    POWER_PIN = 36
 
     wlan_manager = WLANManager(SSID, PW, IP_ADDRESS)
     http_request_wait = HTTPRequestWait(IP_ADDRESS, PORT)
-    request_handler = RequestHandler(CALLBELL_DURATION, BZ_PIN, LED_PIN, SW_PIN)
+    request_handler = RequestHandler(CALLBELL_DURATION, BZ_PIN, LED_PIN, SW_PIN, POWER_PIN)
 
     wlan_manager.connect()
 
@@ -102,4 +106,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
