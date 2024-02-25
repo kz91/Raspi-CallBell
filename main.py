@@ -1,31 +1,28 @@
 import sys
 import subprocess
 import PySide6.QtWidgets as Qw
-from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtWidgets import QMessageBox
 from datetime import datetime
 
 
-# PySide6.QtWidgets.MainWindow を継承aした MainWindow クラスの定義
 class MainWindow(Qw.QMainWindow):
-    # コンストラクタ(初期化)
     def __init__(self):
         super().__init__()
 
-        # 親クラスのコンストラクタの呼び出し
         self.window_position_x = 100
         self.window_position_y = 50
         self.window_width = 640
         self.window_height = 240
         self.log_file_path = 'log.txt'
-        self.send_ip_txt = []
-        self.a_ip = 'a_ip'
-        self.b_ip = 'b_ip'
-        self.c_ip = 'c_ip'
+        self.destination_ip = []
+        self.a_ip = '192.168.1.131'
+        self.b_ip = '192.168.1.132'
+        self.c_ip = '192.168.1.133'
 
-        # ウィンドウタイトル設定
+        # window title setting
         self.setWindowTitle('Call Bell')
 
-        # ウィンドウのサイズ(640x240)と位置(X=100,Y=50)の設定
+        # window size and position setting
         self.setFixedSize(self.window_width, self.window_height)
 
         # 'Call A' button settings
@@ -54,56 +51,65 @@ class MainWindow(Qw.QMainWindow):
         self.btn_log.setGeometry(520, 10, 100, 20)
         self.btn_log.clicked.connect(self.btn_log_clicked)
 
-        # テキストボックス
+        # text box
         self.tb_log = Qw.QTextEdit('', self)
         self.tb_log.setReadOnly(True)
         self.tb_log.setGeometry(10, 40, 620, 170)
         self.tb_log.setPlaceholderText('(ここに実行ログを表示します)')
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_message = f'[{current_time}] Program started.'
+        self.tb_log.append(log_message)
 
-        # ステータスバー
+        # status bar
         self.sb_status = Qw.QStatusBar()
         self.setStatusBar(self.sb_status)
         self.sb_status.setSizeGripEnabled(False)
-        self.sb_status.showMessage('プログラムを起動しました。')
+        self.sb_status.showMessage('Program started.')
+
+    def send_request(self, ips):
+        try:
+            completed_process = subprocess.run(['python', 'send-request.py'] + ips, capture_output=True, text=True)
+            output = completed_process.stdout.strip()
+            self.log_output(output)
+            self.log_output("Finishing send-request.py")
+        except Exception as e:
+            self.log_output("Error:", e)
+
+    def log_output(self, message):
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_message = f'[{current_time}] {message}'
+        self.tb_log.append(log_message)
 
     def btn_call_a_clicked(self):
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_message = f'[{current_time}] Call A Button Clicked.'
-        self.tb_log.append(log_message)
-        self.send_ip_txt = [self.a_ip]
+        self.log_output("Call A Button Clicked.")
+        self.destination_ip = [self.a_ip]
+        self.send_request(self.destination_ip)
 
     def btn_call_b_clicked(self):
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_message = f'[{current_time}] Call B Button Clicked.'
-        self.tb_log.append(log_message)
-        self.send_ip_txt = [self.b_ip]
+        self.log_output("Call B Button Clicked.")
+        self.destination_ip = [self.b_ip]
+        self.send_request(self.destination_ip)
 
     def btn_call_c_clicked(self):
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_message = f'[{current_time}] Call C Button Clicked.'
-        self.tb_log.append(log_message)
-        self.send_ip_txt = [self.c_ip]
+        self.log_output("Call C Button Clicked.")
+        self.destination_ip = [self.c_ip]
+        self.send_request(self.destination_ip)
 
     def btn_call_all_clicked(self):
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_message = f'[{current_time}] Call All Button Clicked.'
-        self.tb_log.append(log_message)
-        self.send_ip_txt = [self.a_ip, self.b_ip, self.c_ip]
+        self.log_output("Call All Button Clicked.")
+        self.destination_ip = [self.a_ip, self.b_ip, self.c_ip]
+        self.send_request(self.destination_ip)
 
     def btn_log_clicked(self):
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_message = f'[{current_time}] open "log.txt" Button Clicked.'
-        self.tb_log.append(log_message)
+        self.log_output('open "log.txt" Button Clicked.')
         try:
             subprocess.run(['xdg-open', self.log_file_path])
-
         except Exception as e:
             error_dialog = QMessageBox()
             error_dialog.setIcon(QMessageBox.critical)
-            error_dialog.setText("ファイルが読み込めませんでした．")
-            # error_dialog.setInformativeText(message)
+            error_dialog.setText("File could not be loaded.")
             error_dialog.setWindowTitle("Call Bell - Error")
-            error_dialog.exec()
+            error_dialog.exec_()
 
 
 class SubWindow(Qw.QWidget):
