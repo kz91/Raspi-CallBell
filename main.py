@@ -15,9 +15,9 @@ class MainWindow(Qw.QMainWindow):
         self.window_height = 240
         self.log_file_path = 'log.txt'
         self.destination_ip = []
-        self.a_ip = '192.168.1.131'
-        self.b_ip = '192.168.1.132'
-        self.c_ip = '192.168.1.133'
+        self.a_ip = 'a_ip'
+        self.b_ip = 'b_ip'
+        self.c_ip = 'c_ip'
 
         # window title setting
         self.setWindowTitle('Call Bell')
