@@ -1,5 +1,4 @@
 import sys
-import socket
 import requests
 
 PICO_W_IPS = sys.argv[1:]
@@ -13,4 +12,3 @@ for PICO_W_IP in PICO_W_IPS:
 
 for resp in responses:
     print(resp)
-

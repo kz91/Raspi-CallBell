@@ -79,6 +79,7 @@ class RequestHandler:
 
 
 def main():
+    ################
     SSID = 'Wifi SSID'
     PW = 'Wifi Password'
     IP_ADDRESS = 'IP Address'
@@ -88,6 +89,7 @@ def main():
     LED_PIN = 20
     SW_PIN = 22
     POWER_PIN = 36
+    ################
 
     wlan_manager = WLANManager(SSID, PW, IP_ADDRESS)
     http_request_wait = HTTPRequestWait(IP_ADDRESS, PORT)
