@@ -1,8 +1,10 @@
 # License
 
-This application is released under the GNU Lesser General Public License v3.0. See the '**LICENSE.txt**' file for details.
+This application is released under the **Apache License, Version2.0**. See the '**LICENSE.txt**' file for details.
 
-Thi application uses **PySide6**, which is released under the LGPL v3 license. See [here](https://www.qt.io/licensing/) for more information.
+**main.py** uses **PySide6**, which is released under the LGPL v3 license. See [here](https://www.qt.io/licensing/) for more information.
+
+**send-request.py** uses **requests**, which is released under the Apache License, Version2.0.
 
 # Pico Wの設定
 
@@ -25,7 +27,4 @@ Thi application uses **PySide6**, which is released under the LGPL v3 license. S
 2. Pico WをPCに接続する。
 3. Thonnyを開き、右上のOpen(FDのアイコン)を押し、pico-script.pyを選択する。
    ![image.png](assets/thonny-open.png)
-4.
-5.
-6. ｄ
-7. ｄ
+4. Run
