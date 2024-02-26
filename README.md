@@ -14,6 +14,8 @@ main.pyでは受信機側のIPアドレス，pico-script.pyではSSID・wifiパ�
 
 # Pico Wの設定
 
+Pico Wを使うには，以下の設定が必要です．
+
 ### UF2ファームウェアのインストール
 
 1. [Raspberry Pi財団サイト](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html)にアクセスしてRaspberry Pi Pico WのUF2ファイルをダウンロードする。
