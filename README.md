@@ -1,8 +1,8 @@
 # License
 
-This application is released under the **Apache License, Version2.0**. See the '**LICENSE.txt**' file for details.
+This application is released under the **LGPL v3** License. See the '**LICENSE.txt**' file for details.
 
-**main.py** uses **PySide6**, which is released under the LGPL v3 license. See [here](https://www.qt.io/licensing/) for more information.
+**main.py** uses **PySide6**, which is released under the **LGPL v3** license. See [here](https://www.qt.io/licensing/) for more information.
 
 **send-request.py** uses **requests**, which is released under the **Apache License, Version2.0**.
 
@@ -25,7 +25,7 @@ main.pyでは受信機側のIPアドレス，pico-script.pyではSSID・wifiパ�
 1. [https://thonny.org/](https://thonny.org/)からThonnyをダウンロードする。
 2. インストーラの指示通りにインストールする。
 3. Thonnyを開き、右下をクリックし、[Configure interpreter(インタプリタ設定)]を押す。![image.png](assets/thonny-config1.png)
-4. インタプリタをMicroPython (Raspberry Pi Pico)に変更する。![image.png](assets/thonny-config2.png)
+4. インタプリタをMicroPython (Raspberry Pi Pico)に変更する。![image.png](2)
 
 ### プログラムの書き込み
 

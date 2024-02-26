@@ -1,3 +1,6 @@
+This application
+License: LGPL v3
+
 PySide6 6.6.2
 Pypi: https://pypi.org/project/PySide6/
 License: LGPL v3
@@ -64,9 +67,9 @@ If the Library as you received it specifies that a proxy can decide whether futu
 
 requests 2.31.0
 PyPi: https://pypi.org/project/requests/
-License: Apache License 2.0
+License: Apache License v2.0
 ----------------------------
-Copyright kz91 "Kenneth Reitz"
+Copyright Kenneth Reitz
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
