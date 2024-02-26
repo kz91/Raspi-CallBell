@@ -4,7 +4,13 @@ This application is released under the **Apache License, Version2.0**. See the '
 
 **main.py** uses **PySide6**, which is released under the LGPL v3 license. See [here](https://www.qt.io/licensing/) for more information.
 
-**send-request.py** uses **requests**, which is released under the Apache License, Version2.0.
+**send-request.py** uses **requests**, which is released under the **Apache License, Version2.0**.
+
+# 変数の設定
+
+**使用する際は，main関数内の#で囲まれた変数を変更してください．**
+
+main.pyでは受信機側のIPアドレス，pico-script.pyではSSID・wifiパスワード・IPアドレス・呼び鈴継続時間・各種ピン番号の設定ができます
 
 # Pico Wの設定
 
@@ -14,7 +20,7 @@ This application is released under the **Apache License, Version2.0**. See the '
 2. Pico WをBOOTSELボタンを押しながらPCと接続し、ドライブが表示されたらボタンを離す。
 3. ダウンロードしたファイルをPico Wのドライブにドラッグアンドドロップする。
 
-### Thonnyのインストール
+### Thonnyのインストールと設定
 
 1. [https://thonny.org/](https://thonny.org/)からThonnyをダウンロードする。
 2. インストーラの指示通りにインストールする。
@@ -27,4 +33,4 @@ This application is released under the **Apache License, Version2.0**. See the '
 2. Pico WをPCに接続する。
 3. Thonnyを開き、右上のOpen(FDのアイコン)を押し、pico-script.pyを選択する。
    ![image.png](assets/thonny-open.png)
-4. Run
+4. Runを押す
