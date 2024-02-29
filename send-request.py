@@ -1,5 +1,5 @@
-from datetime import datetime
 import sys
+import socket
 import requests
 
 PICO_W_IPS = sys.argv[1:]
@@ -8,9 +8,9 @@ responses = []
 
 for PICO_W_IP in PICO_W_IPS:
     response = requests.post(f"http://{PICO_W_IP}:{PICO_W_PORT}")
-    print(f"Call: {PICO_W_IP}")
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    responses.append(f"[{current_time}] {response.text}")
+    print("call: ", PICO_W_IP)
+    responses.append(response.text)
 
 for resp in responses:
     print(resp)
+

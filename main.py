@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 class MainWindow(Qw.QMainWindow):
-    def __init__(self):
+    def __init__(self, a_ip, b_ip, c_ip):
         super().__init__()
 
         self.window_position_x = 100
@@ -15,9 +15,9 @@ class MainWindow(Qw.QMainWindow):
         self.window_height = 240
         self.log_file_path = 'log.txt'
         self.destination_ip = []
-        self.a_ip = 'a_ip'
-        self.b_ip = 'b_ip'
-        self.c_ip = 'c_ip'
+        self.a_ip = a_ip
+        self.b_ip = b_ip
+        self.c_ip = c_ip
 
         # window title setting
         self.setWindowTitle('Call Bell')
@@ -68,7 +68,8 @@ class MainWindow(Qw.QMainWindow):
 
     def send_request(self, ips):
         try:
-            completed_process = subprocess.run(['python', 'send-request.py'] + ips, capture_output=True, text=True)
+            completed_process = subprocess.run(['python', 'send-request.py'] + ips,
+                                               capture_output=True, text=True)
             output = completed_process.stdout.strip()
             self.log_output(output)
             self.log_output("Finishing send-request.py")
@@ -119,9 +120,18 @@ class SubWindow(Qw.QWidget):
         self.setGeometry(100, 50, 640, 240)
 
 
-# 本体
-if __name__ == '__main__':
+def main():
+    #############
+    A_IP = 'a_ip'
+    B_IP = 'b_ip'
+    C_IP = 'c_ip'
+    #############
     app = Qw.QApplication(sys.argv)
-    main_window = MainWindow()
+    main_window = MainWindow(A_IP, B_IP, C_IP)
     main_window.show()
     sys.exit(app.exec())
+
+
+# 本体
+if __name__ == '__main__':
+    main()
