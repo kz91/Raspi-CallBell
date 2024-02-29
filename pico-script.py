@@ -1,4 +1,4 @@
-import machine
+from machine import Pin
 import network
 import usocket as socket
 import time
@@ -43,38 +43,46 @@ class HTTPRequestWait:
         conn, addr = self.s.accept()
         print('Connection from %s' % str(addr))
         request = conn.recv(1024).decode('utf-8')
-        conn.sendall(b'HTTP/1.1 200 OK\nContent-type: text/html\n\nRequest processed.')
+        conn.sendall(b'HTTP/1.1 200 OK\nContent-type: text/html\n\nBell A: Request Received.')
         conn.close()
         return request
 
 
 class RequestHandler:
-    def __init__(self, duration, bz_pin, led_pin, sw_pin, power_pin):
+    def __init__(self, duration, led_and_bz_pin, sw_pin, power_pin):
         print('!RequestHandler init')
         self.duration = duration
-        self.bz_pin = machine.Pin(bz_pin, machine.Pin.OUT)
-        self.led_pin = machine.Pin(led_pin, machine.Pin.OUT)
-        self.sw_pin = machine.Pin(sw_pin, machine.Pin.IN, machine.Pin.PULL_UP)
-        self.power_pin = machine.Pin(power_pin, machine.Pin.OUT)
-        self.interrupted = False
+        self.led_and_bz_pin = Pin(led_and_bz_pin, Pin.OUT)
+        self.sw_pin = Pin(sw_pin, Pin.IN, Pin.PULL_UP)
+        self.sw_pin.irq(trigger=Pin.IRQ_FALLING, handler=self.interrupt)
+        self.power_pin = Pin(power_pin, Pin.OUT)
 
     # 呼び鈴処理
     def handle_request(self):
         print('!RequestHandler handle_request')
+        self.interrupted = False
         self.power_pin.on()
         for i in range(self.duration):
+            for _ in range(5):
+                if self.interrupted:
+                    self.interrupted = False
+                    return
+                self.led_and_bz_pin.on()
+                time.sleep(0.1)
+            for _ in range(5):
+                if self.interrupted:
+                    self.interrupted = False
+                    return
+                self.led_and_bz_pin.off()
+                time.sleep(0.1)
             if self.interrupted:
+                self.interrupted = False
                 break
-            self.led_pin.on()
-            self.bz_pin.on()
-            time.sleep(0.5)
-            self.led_pin.off()
-            self.bz_pin.off()
-            time.sleep(0.5)
         self.power_pin.off()
 
-    def interrupt_handler(self, pin):
-        print('!RequestHandler interrupt_handler')
+    def interrupt(self, pin):
+        print('!RequestHandler interrupt')
+        self.led_and_bz_pin.off()
         self.interrupted = True
 
 
@@ -84,14 +92,18 @@ def main():
     IP_ADDRESS = 'IP Address'
     PORT = 80
     CALLBELL_DURATION = 10
-    BZ_PIN = 18
-    LED_PIN = 20
+    POWER_PIN = 17
+    LED_AND_BZ_PIN = 18
     SW_PIN = 22
-    POWER_PIN = 36
 
     wlan_manager = WLANManager(SSID, PW, IP_ADDRESS)
     http_request_wait = HTTPRequestWait(IP_ADDRESS, PORT)
-    request_handler = RequestHandler(CALLBELL_DURATION, BZ_PIN, LED_PIN, SW_PIN, POWER_PIN)
+    request_handler = RequestHandler(CALLBELL_DURATION, LED_AND_BZ_PIN, SW_PIN, POWER_PIN)
+
+    led_and_bz_pin = Pin(LED_AND_BZ_PIN, Pin.OUT)
+    led_and_bz_pin.on()
+    time.sleep(3)
+    led_and_bz_pin.off()
 
     wlan_manager.connect()
 
@@ -106,5 +118,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
