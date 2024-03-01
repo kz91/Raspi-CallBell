@@ -1,3 +1,6 @@
+![](https://img.shields.io/badge/PySide6-6.6.2-blue)
+![](https://img.shields.io/badge/requests-2.31.0-blue)
+![](https://img.shields.io/badge/license-LGPL%20v3-green)
 # License
 
 This application is released under the **LGPL v3** License. See the '**LICENSE.txt**' file for details.
