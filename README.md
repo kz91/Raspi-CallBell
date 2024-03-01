@@ -43,7 +43,7 @@ Pico Wを使うには，以下の設定が必要です．
 1. Pico WをPCに接続する．
 2. pico-script.pyをダウンロードする．
 3. Thonnyを開き，pico-script.pyの中身をコピペする．
-4. Saveを押し，保存先にRaspberry Pi Picoを選択．ファイル名をpico-script.pyにして保存する．
+4. Saveを押し，保存先にRaspberry Pi Picoを選択．ファイル名をmain.pyにして保存する．
    ![image.png](assets/thonny-save.png)
 
    ![image.png](assets/thonny-save2.png)
