@@ -56,7 +56,7 @@ class MainWindow(Qw.QMainWindow):
         self.tb_log.setReadOnly(True)
         self.tb_log.setGeometry(10, 40, 620, 170)
         self.tb_log.setPlaceholderText('(ここに実行ログを表示します)')
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_message = f'[{current_time}] Program started.'
         self.tb_log.append(log_message)
 
@@ -72,32 +72,32 @@ class MainWindow(Qw.QMainWindow):
                                                capture_output=True, text=True)
             output = completed_process.stdout.strip()
             self.log_output(output)
-            self.log_output('Finishing send-request.py')
+            self.log_output("Finishing send-request.py")
         except Exception as e:
             self.log_output("Error:", e)
 
     def log_output(self, message):
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_message = f'[{current_time}] {message}'
         self.tb_log.append(log_message)
 
     def btn_call_a_clicked(self):
-        self.log_output('Call A Button Clicked.')
+        self.log_output("Call A Button Clicked.")
         self.destination_ip = [self.a_ip]
         self.send_request(self.destination_ip)
 
     def btn_call_b_clicked(self):
-        self.log_output('Call B Button Clicked.')
+        self.log_output("Call B Button Clicked.")
         self.destination_ip = [self.b_ip]
         self.send_request(self.destination_ip)
 
     def btn_call_c_clicked(self):
-        self.log_output('Call C Button Clicked.')
+        self.log_output("Call C Button Clicked.")
         self.destination_ip = [self.c_ip]
         self.send_request(self.destination_ip)
 
     def btn_call_all_clicked(self):
-        self.log_output('Call All Button Clicked.')
+        self.log_output("Call All Button Clicked.")
         self.destination_ip = [self.a_ip, self.b_ip, self.c_ip]
         self.send_request(self.destination_ip)
 
@@ -108,8 +108,8 @@ class MainWindow(Qw.QMainWindow):
         except Exception as e:
             error_dialog = QMessageBox()
             error_dialog.setIcon(QMessageBox.critical)
-            error_dialog.setText('File could not be loaded.')
-            error_dialog.setWindowTitle('Call Bell - Error')
+            error_dialog.setText("File could not be loaded.")
+            error_dialog.setWindowTitle("Call Bell - Error")
             error_dialog.exec_()
 
 
@@ -122,7 +122,7 @@ class SubWindow(Qw.QWidget):
 
 def main():
     #############
-    A_IP = '192.168.1.131'
+    A_IP = 'a_ip'
     B_IP = 'b_ip'
     C_IP = 'c_ip'
     #############
