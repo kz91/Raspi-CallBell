@@ -5,20 +5,28 @@ import time
 
 
 class WLANManager:
-    def __init__(self, ssid, pw, ip_address):
-        print('!WLANManager init')
+    def __init__(self, ssid, pw, ip_address, max_retries=10):
+        print('WLANManager Initialize')
         self.ssid = ssid
         self.pw = pw
         self.ip_address = ip_address
         self.wlan = network.WLAN(network.STA_IF)
+        self.max_retries = max_retries
 
     def connect(self):
-        print('!WLANManager connect')
+        print('WLANManager connect')
         self.wlan.active(True)
         self.wlan.connect(self.ssid, self.pw)
+
+        retries = 0
         while not self.wlan.isconnected():
-            print('Connecting to Wi-Fi router')
+            if retries >= self.max_retries:
+                print(f'Failed to connect to Wi-Fi after {self.max_retries} attempts.')
+                return False
+            print(f'Attempting to connect... ({retries + 1}/{self.max_retries})')
             time.sleep(1)
+            retries += 1
+
         wlan_status = self.wlan.ifconfig()
         self.wlan.ifconfig((self.ip_address, wlan_status[1], wlan_status[2], wlan_status[3]))
         print('Connected!')
@@ -27,11 +35,12 @@ class WLANManager:
         print(f'Netmask: {wlan_status[1]}')
         print(f'Default Gateway: {wlan_status[2]}')
         print(f'Name Server: {wlan_status[3]}')
+        return True
 
 
 class HTTPRequestWait:
     def __init__(self, ip_address, port):
-        print('!HTTPRequestWait init')
+        print('HTTPRequestWait init')
         self.ip_address = ip_address
         self.port = port
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -39,7 +48,7 @@ class HTTPRequestWait:
         self.s.listen(5)
 
     def wait_for_requests(self):
-        print('!HTTPRequestWait wait_for_requests')
+        print('HTTPRequestWait wait_for_requests')
         conn, addr = self.s.accept()
         print('Connection from %s' % str(addr))
         request = conn.recv(1024).decode('utf-8')
@@ -50,16 +59,15 @@ class HTTPRequestWait:
 
 class RequestHandler:
     def __init__(self, duration, led_and_bz_pin, sw_pin, power_pin):
-        print('!RequestHandler init')
+        print('RequestHandler init')
         self.duration = duration
         self.led_and_bz_pin = Pin(led_and_bz_pin, Pin.OUT)
         self.sw_pin = Pin(sw_pin, Pin.IN, Pin.PULL_UP)
         self.sw_pin.irq(trigger=Pin.IRQ_FALLING, handler=self.interrupt)
         self.power_pin = Pin(power_pin, Pin.OUT)
 
-    # 呼び鈴処理
     def handle_request(self):
-        print('!RequestHandler handle_request')
+        print('RequestHandler handle_request')
         self.interrupted = False
         self.power_pin.on()
         for i in range(self.duration):
@@ -81,34 +89,36 @@ class RequestHandler:
         self.power_pin.off()
 
     def interrupt(self, pin):
-        print('!RequestHandler interrupt')
+        print('interrupt')
         self.led_and_bz_pin.off()
         self.interrupted = True
 
 
 def main():
     ################
-    SSID = 'Wifi SSID'
-    PW = 'Wifi Password'
-    IP_ADDRESS = 'IP Address'
+    SSID = 'wifi_ssid'
+    PW = 'wifi_pw'
+    RECEIVER_IP = 'receiver_ip_address'
     PORT = 80
     CALLBELL_DURATION = 10
     POWER_PIN = 17
     LED_AND_BZ_PIN = 18
     SW_PIN = 22
-    POWER_PIN = 36
     ################
 
-    wlan_manager = WLANManager(SSID, PW, IP_ADDRESS)
-    http_request_wait = HTTPRequestWait(IP_ADDRESS, PORT)
+    wlan_manager = WLANManager(SSID, PW, RECEIVER_IP)
+    http_request_wait = HTTPRequestWait(RECEIVER_IP, PORT)
     request_handler = RequestHandler(CALLBELL_DURATION, LED_AND_BZ_PIN, SW_PIN, POWER_PIN)
 
     led_and_bz_pin = Pin(LED_AND_BZ_PIN, Pin.OUT)
     led_and_bz_pin.on()
-    time.sleep(3)
-    led_and_bz_pin.off()
 
-    wlan_manager.connect()
+    if not wlan_manager.connect():
+        print("Wi-Fi connection failed. Exiting program.")
+        return
+
+    time.sleep(2)
+    led_and_bz_pin.off()
 
     while True:
         request = ''
