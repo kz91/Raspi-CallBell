@@ -1,11 +1,11 @@
 from machine import Pin
-import time
+import utime
 import network
 import urequests
 
 
 class WLANManager:
-    def __init__(self, ssid, pw, ip_address, max_retries=10):
+    def __init__(self, ssid, pw, ip_address, max_retries):
         print('WLANManager Initialize')
         self.ssid = ssid
         self.pw = pw
@@ -24,7 +24,7 @@ class WLANManager:
                 print(f'Failed to connect to Wi-Fi after {self.max_retries} attempts.')
                 return False
             print(f'Attempting to connect... ({retries + 1}/{self.max_retries})')
-            time.sleep(1)
+            utime.sleep(1)
             retries += 1
 
         wlan_status = self.wlan.ifconfig()
@@ -39,15 +39,13 @@ class WLANManager:
 
 
 class DataTransmission:
-    def __init__(self, A_IP, B_IP, C_IP):
+    def __init__(self, A_IP, B_IP, C_IP, leds, sws):
         self.A_IP = A_IP
         self.B_IP = B_IP
         self.C_IP = C_IP
 
-        self.leds = [Pin(10, Pin.OUT), Pin(11, Pin.OUT), Pin(12, Pin.OUT)]
-
-        self.sws = [Pin(18, Pin.IN, Pin.PULL_UP), Pin(19, Pin.IN, Pin.PULL_UP),
-                    Pin(20, Pin.IN, Pin.PULL_UP), Pin(21, Pin.IN, Pin.PULL_UP)]
+        self.leds = leds
+        self.sws = sws
 
         for sw in self.sws:
             sw.irq(trigger=Pin.IRQ_FALLING, handler=self.callback)
@@ -57,58 +55,79 @@ class DataTransmission:
     def send_request(self, current_sw):
         print(f'send request')
 
-        target_map = {
+        TARGET_MAP = {
             0: ([self.A_IP], ['A']),
             1: ([self.B_IP], ['B']),
             2: ([self.C_IP], ['C']),
             3: ([self.A_IP, self.B_IP, self.C_IP], ['A', 'B', 'C'])
         }
-        PICO_W_IPS, sendto = target_map.get(current_sw, ([], []))
+
+        if current_sw not in TARGET_MAP:
+            raise ValueError(f'Invalid switch value: {current_sw}')
+
+        pico_w_ips, sendto = TARGET_MAP[current_sw]
 
         PICO_W_PORT = 80
 
-        for i in range(len(PICO_W_IPS)):
-            url = f'http://{PICO_W_IPS[i]}:{PICO_W_PORT}'
+        for i in range(len(pico_w_ips)):
+            url = f'http://{pico_w_ips[i]}:{PICO_W_PORT}'
             res = None
 
             try:
+                print(f'Sending request to: {url}')
                 res = urequests.post(url)
-                print(f'Call {sendto[i]}: {PICO_W_IPS[i]}')
+                if res is None:
+                    raise ValueError(f'[Error] No response received from {pico_w_ips[i]}')
 
-                current_time = time.localtime()
+                print(f'Call {sendto[i]}: {pico_w_ips[i]}')
+
+                current_time = utime.localtime()
                 formatted_time = f"{current_time[0]:04d}-{current_time[1]:02d}-{current_time[2]:02d} " \
                                  f"{current_time[3]:02d}:{current_time[4]:02d}:{current_time[5]:02d}"
 
                 self.responses.append(f"[{formatted_time}] {res.text}")
 
-            except OSError as e:
-                print(f"[Error] Call {sendto[i]} to {PICO_W_IPS[i]} failed: {e}")
-                self.responses.append(f"Call {sendto[i]} to {PICO_W_IPS[i]} failed: {e}")
+            except ValueError as ve:
+                print(f'[ValueError] {ve}')
+                self.responses.append(f'Call {sendto[i]} to {pico_w_ips[i]} failed: {ve}')
 
-                self.reset()
+            except OSError as e:
+                print(f'[OSError] Call {sendto[i]} to {pico_w_ips[i]} failed: {e}')
+                self.responses.append(f'Call {sendto[i]} to {pico_w_ips[i]} failed: {e}')
                 return
 
             finally:
-                if hasattr(res, "close"):
+                print('finally')
+                if res is not None and hasattr(res, "close"):
                     res.close()
+                for resp in self.responses:
+                    print(resp)
 
-        for resp in self.responses:
-            print(resp)
-
-        time.sleep(2)
-        self.reset()
+                self.transmission_complete_time = utime.ticks_ms()
 
     def reset(self):
         print(f'reset')
         self.responses = []
         self.current_sw = None
+        self.last_pressed_time = 0
+        self.transmission_complete_time = None
+
         for i, led in enumerate(self.leds):
             led.value(0)
             print(f'LED {i} turned off')
 
+        utime.sleep(0.2)
+        self.leds[3].value(1)
+
     def callback(self, pin):
         print(f'callback')
-        time.sleep(1)
+        current_time = utime.ticks_ms()
+
+        if utime.ticks_diff(current_time, self.last_pressed_time) < 1000:
+            print('anti chatter')
+            return
+
+        self.last_pressed_time = current_time
 
         for i in range(3):
             if pin is self.sws[i]:
@@ -120,8 +139,20 @@ class DataTransmission:
                 self.leds[i].value(1)
             self.current_sw = 3
 
-        if self.current_sw is not None:
-            self.send_request(self.current_sw)
+    def run(self):
+        while True:
+            utime.sleep(0.1)
+
+            if self.current_sw is not None:
+                self.send_request(self.current_sw)
+                self.current_sw = None
+
+            if self.transmission_complete_time is not None:
+                elapsed_time = utime.ticks_diff(utime.ticks_ms(), self.transmission_complete_time)
+
+                if elapsed_time >= 1000:
+                    self.reset()
+                    self.transmission_complete_time = None
 
 
 def main():
@@ -129,21 +160,38 @@ def main():
     SSID = 'wifi_ssid'
     PW = 'wifi_pw'
     TRANSMITTER_IP = 'transmitter_ip_address'
+    MAX_RETRIES = 10
 
     RECEIVER_A_IP = 'receiver_a_ip_address'
     RECEIVER_B_IP = 'receiver_b_ip_address'
     RECEIVER_C_IP = 'receiver_c_ip_address'
+
+    LED_PIN_1 = 10
+    LED_PIN_2 = 11
+    LED_PIN_3 = 12
+    POWER_LED_PIN = 13
+
+    SW_PIN_1 = 18
+    SW_PIN_2 = 19
+    SW_PIN_3 = 20
+    SW_PIN_ALL = 21
     ################
 
-    wlan_manager = WLANManager(SSID, PW, TRANSMITTER_IP)
+    leds = [Pin(LED_PIN_1, Pin.OUT), Pin(LED_PIN_2, Pin.OUT),
+            Pin(LED_PIN_3, Pin.OUT), Pin(POWER_LED_PIN, Pin.OUT)]
+
+    sws = [Pin(SW_PIN_1, Pin.IN, Pin.PULL_UP), Pin(SW_PIN_2, Pin.IN, Pin.PULL_UP),
+           Pin(SW_PIN_3, Pin.IN, Pin.PULL_UP), Pin(SW_PIN_ALL, Pin.IN, Pin.PULL_UP)]
+
+    leds[3].value(1)
+
+    wlan_manager = WLANManager(SSID, PW, TRANSMITTER_IP, MAX_RETRIES)
     if not wlan_manager.connect():
         print("Wi-Fi connection failed. Exiting program.")
         return
 
-    transmission = DataTransmission(RECEIVER_A_IP, RECEIVER_B_IP, RECEIVER_C_IP)
-
-    while True:
-        time.sleep(0.1)
+    transmission = DataTransmission(RECEIVER_A_IP, RECEIVER_B_IP, RECEIVER_C_IP, leds, sws)
+    transmission.run()
 
 
 if __name__ == "__main__":
