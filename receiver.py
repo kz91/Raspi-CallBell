@@ -1,7 +1,7 @@
 from machine import Pin
-import network
 import usocket as socket
-import time
+import utime
+import network
 
 
 class WLANManager:
@@ -24,7 +24,7 @@ class WLANManager:
                 print(f'Failed to connect to Wi-Fi after {self.max_retries} attempts.')
                 return False
             print(f'Attempting to connect... ({retries + 1}/{self.max_retries})')
-            time.sleep(1)
+            utime.sleep(1)
             retries += 1
 
         wlan_status = self.wlan.ifconfig()
@@ -76,13 +76,13 @@ class RequestHandler:
                     self.interrupted = False
                     return
                 self.led_and_bz_pin.on()
-                time.sleep(0.1)
+                utime.sleep(0.1)
             for _ in range(5):
                 if self.interrupted:
                     self.interrupted = False
                     return
                 self.led_and_bz_pin.off()
-                time.sleep(0.1)
+                utime.sleep(0.1)
             if self.interrupted:
                 self.interrupted = False
                 break
@@ -117,7 +117,7 @@ def main():
         print("Wi-Fi connection failed. Exiting program.")
         return
 
-    time.sleep(2)
+    utime.sleep(2)
     led_and_bz_pin.off()
 
     while True:
