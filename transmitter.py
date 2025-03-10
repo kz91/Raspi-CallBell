@@ -1,7 +1,7 @@
 from machine import Pin
 import utime
-import network
 import urequests
+import network
 
 
 class WLANManager:
@@ -63,7 +63,7 @@ class DataTransmission:
         }
 
         if current_sw not in TARGET_MAP:
-            raise ValueError(f'Invalid switch value: {current_sw}')
+            raise ValueError(f'[Error] Invalid switch value: {current_sw}')
 
         pico_w_ips, sendto = TARGET_MAP[current_sw]
 
@@ -82,10 +82,12 @@ class DataTransmission:
                 print(f'Call {sendto[i]}: {pico_w_ips[i]}')
 
                 current_time = utime.localtime()
-                formatted_time = f"{current_time[0]:04d}-{current_time[1]:02d}-{current_time[2]:02d} " \
-                                 f"{current_time[3]:02d}:{current_time[4]:02d}:{current_time[5]:02d}"
+                formatted_time = (
+                    f'{current_time[0]:04d}-{current_time[1]:02d}-{current_time[2]:02d} '
+                    f'{current_time[3]:02d}:{current_time[4]:02d}:{current_time[5]:02d}'
+                )
 
-                self.responses.append(f"[{formatted_time}] {res.text}")
+                self.responses.append(f'[{formatted_time}] {res.text}')
 
             except ValueError as ve:
                 print(f'[ValueError] {ve}')
@@ -97,13 +99,14 @@ class DataTransmission:
                 return
 
             finally:
-                print('finally')
-                if res is not None and hasattr(res, "close"):
+                if res is not None and hasattr(res, 'close'):
+                    print('res close')
                     res.close()
-                for resp in self.responses:
-                    print(resp)
 
-                self.transmission_complete_time = utime.ticks_ms()
+        for resp in self.responses:
+            print(resp)
+
+        self.transmission_complete_time = utime.ticks_ms()
 
     def reset(self):
         print(f'reset')
@@ -124,7 +127,7 @@ class DataTransmission:
         current_time = utime.ticks_ms()
 
         if utime.ticks_diff(current_time, self.last_pressed_time) < 1000:
-            print('anti chatter')
+            print('Debounced')
             return
 
         self.last_pressed_time = current_time
@@ -166,33 +169,33 @@ def main():
     RECEIVER_B_IP = 'receiver_b_ip_address'
     RECEIVER_C_IP = 'receiver_c_ip_address'
 
-    LED_PIN_1 = 10
-    LED_PIN_2 = 11
-    LED_PIN_3 = 12
+    LED_PIN_A = 10
+    LED_PIN_B = 11
+    LED_PIN_C = 12
     POWER_LED_PIN = 13
 
-    SW_PIN_1 = 18
-    SW_PIN_2 = 19
-    SW_PIN_3 = 20
+    SW_PIN_A = 18
+    SW_PIN_B = 19
+    SW_PIN_C = 20
     SW_PIN_ALL = 21
     ################
 
-    leds = [Pin(LED_PIN_1, Pin.OUT), Pin(LED_PIN_2, Pin.OUT),
-            Pin(LED_PIN_3, Pin.OUT), Pin(POWER_LED_PIN, Pin.OUT)]
+    leds = [Pin(LED_PIN_A, Pin.OUT), Pin(LED_PIN_B, Pin.OUT),
+            Pin(LED_PIN_C, Pin.OUT), Pin(POWER_LED_PIN, Pin.OUT)]
 
-    sws = [Pin(SW_PIN_1, Pin.IN, Pin.PULL_UP), Pin(SW_PIN_2, Pin.IN, Pin.PULL_UP),
-           Pin(SW_PIN_3, Pin.IN, Pin.PULL_UP), Pin(SW_PIN_ALL, Pin.IN, Pin.PULL_UP)]
+    sws = [Pin(SW_PIN_A, Pin.IN, Pin.PULL_UP), Pin(SW_PIN_B, Pin.IN, Pin.PULL_UP),
+           Pin(SW_PIN_C, Pin.IN, Pin.PULL_UP), Pin(SW_PIN_ALL, Pin.IN, Pin.PULL_UP)]
 
     leds[3].value(1)
 
     wlan_manager = WLANManager(SSID, PW, TRANSMITTER_IP, MAX_RETRIES)
     if not wlan_manager.connect():
-        print("Wi-Fi connection failed. Exiting program.")
+        print('[Error] Wi-Fi connection failed. Exiting program.')
         return
 
     transmission = DataTransmission(RECEIVER_A_IP, RECEIVER_B_IP, RECEIVER_C_IP, leds, sws)
     transmission.run()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
